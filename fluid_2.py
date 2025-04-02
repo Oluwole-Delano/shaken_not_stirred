@@ -182,6 +182,15 @@ class OceanBloodSimulation:
         v_corrected=v-self.dt*grad_p_y
         u_final,v_final=self.apply_boundary_conditions(u_corrected,v_corrected); return u_final,v_final
 
+    def step_function_decay(self):
+
+        if self.time < 30:
+            return 1
+        else: # self.time >= 30 and self.time < 55:
+            return np.exp(-(self.time)/20)
+        #else:
+            #return 0
+
     def simulate_step(self):
         #velocity from the previous step
         u_old = self.u_vel.copy()
@@ -239,8 +248,8 @@ class OceanBloodSimulation:
 
         # forces/velocities
         # a_shake contributes acceleration*dt, u_rand/v_rand contribute velocity
-        u_forced += u_rand
-        v_forced += a_shake * self.dt + v_rand
+        u_forced += u_rand *  self.step_function_decay()
+        v_forced += ( a_shake * self.dt + v_rand ) * self.step_function_decay()
         
         #boundary conditions before projection
         u_forced, v_forced = self.apply_boundary_conditions(u_forced, v_forced)
